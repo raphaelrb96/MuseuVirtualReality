@@ -55,7 +55,8 @@ public class Waypoint : MonoBehaviour
 	public float scale_focus_max				= 0.0f;
 
 	[Header("Sounds")]
-	public AudioClip clip_click					= null;				
+	public AudioClip clip_click					= null;	
+	public AudioClip narracao = null;
 
 	[Header("Hide Distance")]
 	public float threshold						= 0.125f;
@@ -70,6 +71,7 @@ public class Waypoint : MonoBehaviour
 		_audio_source				= gameObject.GetComponent<AudioSource>();	
 		_audio_source.clip		 	= clip_click;
 		_audio_source.playOnAwake 	= false;
+		_audio_source.loop = false;
 	}
 
 
@@ -77,11 +79,13 @@ public class Waypoint : MonoBehaviour
 	{
 		bool occupied 	= Camera.main.transform.parent.transform.position == gameObject.transform.position;
 
+
+
 		switch(_state)
 		{
 			case State.Idle:
-				Idle();
-				
+				Idle ();
+				_audio_source.clip = clip_click;
 				_state 		= occupied ? State.Occupied : _state;
 				break;
 
@@ -102,7 +106,13 @@ public class Waypoint : MonoBehaviour
 				_state 		= occupied ? State.Occupied : _state;
 				break;
 			case State.Occupied:
-				Hide();
+				Hide ();
+					
+				if (narracao != null) {
+
+					Narrar ();
+
+				}
 
 				_state = !occupied ? State.Idle : _state;
 				break;
@@ -121,6 +131,16 @@ public class Waypoint : MonoBehaviour
 		gameObject.transform.localScale 									= Vector3.one * _scale;
 
 		_animated_lerp														= Mathf.Abs(Mathf.Cos(Time.time * scale_animation));
+	}
+
+	private bool narrou = false;
+
+	public void Narrar() {
+		if (!_audio_source.isPlaying) {
+			_audio_source.Play ();
+			_audio_source.clip = narracao;
+			narrou = true;
+		}
 	}
 
 
